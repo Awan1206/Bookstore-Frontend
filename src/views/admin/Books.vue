@@ -136,7 +136,7 @@ const {
         class="bg-white border border-[#E8E3DA] rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col"
       >
         <!-- Book cover -->
-        <div class="aspect-[3/4] bg-[#F5F2EC] relative overflow-hidden">
+        <div class="aspect-[3/3] bg-[#F5F2EC] relative overflow-hidden">
           <img
             v-if="book.image_url"
             :src="book.image_url"

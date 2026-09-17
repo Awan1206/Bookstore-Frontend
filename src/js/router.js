@@ -80,6 +80,21 @@ const routes = [
         name: 'admin.categories',
         component: () => import('@/views/admin/Category.vue')
       },
+      {
+        path: 'users',
+        name: 'admin.users',
+        component: () => import('@/views/admin/Users.vue')
+      },
+      {
+        path: 'reports',
+        name: 'admin.reports',
+        component: () => import('@/views/admin/Report.vue')
+      },
+      {
+        path: 'cashier',
+        name: 'admin.cashier',
+        component: () => import('@/views/admin/Cashier.vue')
+      },
   //     {
   //       path: 'chats',
   //       name: 'admin.chats',
