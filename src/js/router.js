@@ -20,16 +20,16 @@ const routes = [
   //   name: 'contact',
   //   component: () => import('@/views/Contact.vue')
   // },
-  // {
-  //   path: '/books',
-  //   name: 'books.index',
-  //   component: () => import('@/views/books/BookCatalog.vue')
-  // },
-  // {
-  //   path: '/books/:id',
-  //   name: 'books.show',
-  //   component: () => import('@/views/books/BookDetail.vue')
-  // },
+  {
+    path: '/books',
+    name: 'books.index',
+    component: () => import('@/views/books/ExploreBooks.vue')
+  },
+  {
+    path: '/books/:id',
+    name: 'books.show',
+    component: () => import('@/views/books/BookDetail.vue')
+  },
 
   // ── Guest-only (tidak boleh diakses jika sudah login) ───────────────
   {

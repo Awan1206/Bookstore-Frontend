@@ -1,19 +1,21 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { useLanding } from '@/composables/landing-page/useLanding'
+import CartDrawer from '@/components/cart/CartDrawer.vue'
+import CheckoutDrawer from '@/components/cart/CheckoutDrawer.vue'
 
 const router = useRouter()
 
 const {
   authStore,
+  cartStore,
   showUserDropdown,
   showCartDrawer,
+  showCheckoutDrawer,
   toggleCartDrawer,
-  cartItems,
-  cartItemsCount,
-  cartTotal,
-  addToCart,
-  removeFromCart,
+  openCheckout,
+  closeCheckoutDrawer,
+  closeAll,
   categories,
   activeCategory,
   filteredBooks,
@@ -25,14 +27,10 @@ const {
   handleSubscribe,
   formatPrice,
   scrollToTop,
-  handleLogout
+  addToCart,   
+  handleLogout,
 } = useLanding()
 
-// Beberapa halaman (login, cart, detail buku, admin dashboard) belum dibuat
-// di router.js. Daripada RouterLink/router.push gagal dengan error
-// "No match for {...}", navigasi ke route yang belum terdaftar dialihkan
-// ke sini dulu. Begitu route aslinya sudah aktif di router.js, navigasi ini
-// otomatis jalan normal tanpa perlu ubah apa-apa lagi.
 function goTo(name, params) {
   if (router.hasRoute(name)) {
     router.push(params ? { name, params } : { name })
@@ -41,23 +39,9 @@ function goTo(name, params) {
   }
 }
 
-// Guard di level UI: guest yang klik add-to-cart diarahkan ke login.
-// Authorization sesungguhnya tetap di backend/route guard, ini hanya UX.
-function handleAddToCart(book) {
-  const result = addToCart(book)
-
-  if (result.requiresLogin) {
-    goTo('login')
-  }
-}
-
-function checkout() {
-  if (!authStore.isAuthenticated) {
-    goTo('login')
-    return
-  }
-
-  goTo('cart')
+async function handleAddToCart(book) {
+  const result = await addToCart(book)
+  if (result?.requiresLogin) goTo('login')
 }
 </script>
 
@@ -80,7 +64,6 @@ function checkout() {
         <!-- Desktop Navigation -->
         <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-[#44403C]">
           <a href="#philosophy" class="hover:text-[#8B331A] transition-colors relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#8B331A] hover:after:w-full after:transition-all">Our Story</a>
-          <a href="#curated" class="hover:text-[#8B331A] transition-colors relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#8B331A] hover:after:w-full after:transition-all">Curated Editions</a>
           <a href="#author-focus" class="hover:text-[#8B331A] transition-colors relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#8B331A] hover:after:w-full after:transition-all">Journal</a>
           <a href="#catalog" class="hover:text-[#8B331A] transition-colors relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#8B331A] hover:after:w-full after:transition-all">Catalog</a>
           <a href="#newsletter" class="hover:text-[#8B331A] transition-colors relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#8B331A] hover:after:w-full after:transition-all">Contact</a>
@@ -98,8 +81,12 @@ function checkout() {
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
             </svg>
-            <span v-if="cartItemsCount > 0" class="absolute top-1 right-1 bg-[#8B331A] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-              {{ cartItemsCount }}
+            <span
+              v-if="cartStore.count > 0"
+              class="absolute top-1 right-1 bg-[
+            #8B331A] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center"
+            >
+              {{ cartStore.count }}
             </span>
           </button>
 
@@ -200,12 +187,13 @@ function checkout() {
             </p>
 
             <div class="pt-2 flex flex-wrap items-center gap-4">
-              <a
-                href="#catalog"
-                class="px-7 py-3.5 bg-[#8B331A] text-white text-xs font-bold tracking-widest uppercase rounded-xs hover:bg-[#722813] transition-all shadow-md hover:shadow-lg active:scale-95 inline-flex items-center space-x-2"
-              >
-                <span>Explore Books</span>
-              </a>
+              <button
+                 type="button"
+                 class="px-7 py-3.5 bg-[#8B331A] text-white text-xs font-bold tracking-widest uppercase rounded-xs hover:bg-[#722813] transition-all shadow-md hover:shadow-lg active:scale-95 inline-flex items-center space-x-2"
+                 @click="goTo('books.index')"
+               >
+                 <span>Explore Books</span>
+               </button>
               <a
                 href="#philosophy"
                 class="px-6 py-3.5 text-xs font-bold tracking-widest uppercase text-[#1C1917] hover:text-[#8B331A] transition-colors inline-flex items-center space-x-2 group"
@@ -308,7 +296,6 @@ function checkout() {
             <div class="mt-8 pt-4 border-t border-[#F0EBE1]">
               <a href="#catalog" class="text-xs font-semibold text-[#8B331A] hover:underline inline-flex items-center space-x-1">
                 <span>Read selection criteria</span>
-                <span>↗</span>
               </a>
             </div>
           </div>
@@ -329,7 +316,6 @@ function checkout() {
             <div class="mt-8 pt-4 border-t border-[#F0EBE1]">
               <a href="#catalog" class="text-xs font-semibold text-[#8B331A] hover:underline inline-flex items-center space-x-1">
                 <span>Explore author dialogues</span>
-                <span>↗</span>
               </a>
             </div>
           </div>
@@ -350,7 +336,6 @@ function checkout() {
             <div class="mt-8 pt-4 border-t border-[#F0EBE1]">
               <a href="#catalog" class="text-xs font-semibold text-[#8B331A] hover:underline inline-flex items-center space-x-1">
                 <span>Our packaging ritual</span>
-                <span>↗</span>
               </a>
             </div>
           </div>
@@ -431,13 +416,12 @@ function checkout() {
           <div class="flex flex-wrap justify-center gap-2 mt-8">
             <button
               v-for="cat in categories"
-              :key="cat"
-              type="button"
-              :class="activeCategory === cat ? 'bg-[#1C1917] text-white' : 'bg-white text-[#44403C] hover:bg-[#EAE5DC]'"
+              :key="cat.id"
+              :class="activeCategory === cat.name ? 'bg-[#1C1917] text-white' : 'bg-white text-[#44403C] hover:bg-[#EAE5DC]'"
               class="px-4 py-1.5 rounded-full text-xs font-medium transition-all border border-[#E8E3DA]"
-              @click="activeCategory = cat"
+              @click="activeCategory = cat.name"
             >
-              {{ cat }}
+              {{ cat.name }}
             </button>
           </div>
         </div>
@@ -471,19 +455,37 @@ function checkout() {
             class="bg-white border border-[#E8E3DA] rounded-xl p-5 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
           >
             <div
-              :class="book.bgClass"
-              class="h-64 rounded-lg p-6 flex flex-col justify-between text-white relative overflow-hidden transition-transform duration-300 group-hover:scale-[1.02] cursor-pointer"
+              class="h-64 rounded-lg relative overflow-hidden transition-transform duration-300 group-hover:scale-[1.02] cursor-pointer"
               @click="goTo('books.show', { id: book.id })"
             >
-              <div class="flex justify-between items-start">
-                <span class="text-[9px] font-mono uppercase bg-black/30 px-2 py-0.5 rounded backdrop-blur-xs">
-                  {{ book.category }}
-                </span>
-                <span class="text-xs font-serif font-bold text-white/80">FOLIO</span>
-              </div>
-              <div>
-                <h4 class="font-serif text-xl font-bold leading-snug line-clamp-2">{{ book.title }}</h4>
-                <p class="text-xs text-white/80 mt-1 font-serif italic">{{ book.author }}</p>
+              <!-- Image if available -->
+              <img
+                v-if="book.image_url"
+                :src="book.image_url"
+                :alt="book.title"
+                class="absolute inset-0 w-full h-full object-cover"
+              />
+              <!-- Fallback color block when no image -->
+              <div
+                v-else
+                :class="book.bgClass"
+                class="absolute inset-0 w-full h-full"
+              ></div>
+
+              <!-- Overlay content -->
+              <div class="relative z-10 h-full p-6 flex flex-col justify-between text-white">
+                <div class="flex justify-between items-start">
+                  <span class="text-[9px] font-mono uppercase bg-black/30 px-2 py-0.5 rounded backdrop-blur-xs">
+                    {{ book.category?.name }}
+                  </span>
+                  <span class="text-xs font-serif font-bold text-white/80">FOLIO</span>
+                </div>
+                <div>
+                  <h4 class="font-serif text-xl font-bold leading-snug line-clamp-2 drop-shadow">{{ book.title }}</h4>
+                  <p class="text-xs text-white/80 mt-1 font-serif italic drop-shadow">{{ book.author }}</p>
+                </div>
+                <!-- optional: darken image for text legibility -->
+                <div v-if="book.image_url" class="absolute inset-0 bg-black/15 -z-10"></div>
               </div>
             </div>
 
@@ -498,7 +500,7 @@ function checkout() {
               <p class="text-xs text-[#78716C] mt-0.5">{{ book.author }}</p>
 
               <div class="mt-4 flex items-center justify-between pt-3 border-t border-[#F0EBE1]">
-                <span class="font-bold text-sm text-[#1C1917]">Rp {{ formatPrice(book.price) }}</span>
+                <span class="font-bold text-sm text-[#1C1917]">Rp {{ formatPrice(book.sell_price) }}</span>
                 <button
                   type="button"
                   class="px-3 py-1.5 bg-[#FAF8F5] border border-[#E8E3DA] hover:bg-[#8B331A] hover:text-white hover:border-[#8B331A] text-xs font-medium text-[#1C1917] rounded-xs transition-colors"
@@ -597,56 +599,24 @@ function checkout() {
 
         <div class="mt-12 pt-8 border-t border-stone-800/80 flex flex-col sm:flex-row justify-between items-center text-[11px]">
           <p>© 2026 FOLIO PRESS. All rights reserved.</p>
-          <p class="mt-2 sm:mt-0">Dibuat dengan Vue 3 &amp; Pinia Auth Store</p>
         </div>
       </div>
     </footer>
 
     <!-- CART DRAWER -->
-    <transition name="fade">
-      <div v-if="showCartDrawer" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex justify-end">
-        <div class="w-full max-w-md bg-white h-full shadow-2xl p-6 flex flex-col justify-between">
-          <div>
-            <div class="flex justify-between items-center pb-4 border-b border-[#E8E3DA]">
-              <h3 class="font-serif font-bold text-xl text-[#1C1917]">Keranjang Belanja</h3>
-              <button type="button" aria-label="Tutup keranjang" class="text-stone-400 hover:text-stone-800" @click="showCartDrawer = false">✕</button>
-            </div>
+    <CartDrawer
+      :show="showCartDrawer"
+      @close="showCartDrawer = false"
+      @open-checkout="openCheckout"
+      @require-login="goTo('login')"
+    />
 
-            <div v-if="cartItems.length === 0" class="py-16 text-center text-stone-500">
-              <svg class="w-12 h-12 mx-auto text-stone-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
-              <p class="text-sm">Keranjang Anda masih kosong.</p>
-            </div>
-
-            <div v-else class="divide-y divide-[#F0EBE1] max-h-[60vh] overflow-y-auto">
-              <div v-for="item in cartItems" :key="item.id" class="py-4 flex justify-between items-center">
-                <div>
-                  <h4 class="font-bold text-sm text-[#1C1917]">{{ item.title }}</h4>
-                  <p class="text-xs text-[#78716C]">{{ item.author }}</p>
-                  <p class="text-xs font-semibold text-[#8B331A] mt-1">Rp {{ formatPrice(item.price) }}</p>
-                </div>
-                <button type="button" class="text-xs text-red-600 hover:underline" @click="removeFromCart(item.id)">Hapus</button>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="cartItems.length > 0" class="pt-4 border-t border-[#E8E3DA]">
-            <div class="flex justify-between items-center text-sm font-bold mb-4">
-              <span>Total Subtotal:</span>
-              <span class="text-base text-[#8B331A]">Rp {{ formatPrice(cartTotal) }}</span>
-            </div>
-            <button
-              type="button"
-              class="w-full py-3 bg-[#1C1917] text-white text-xs font-bold uppercase tracking-wider rounded hover:bg-[#8B331A] transition-colors"
-              @click="checkout"
-            >
-              Lanjutkan ke Checkout
-            </button>
-          </div>
-        </div>
-      </div>
-    </transition>
+    <!-- CHECKOUT DRAWER (layered on top) -->
+    <CheckoutDrawer
+      :show="showCheckoutDrawer"
+      @close="closeAll"
+      @back="closeCheckoutDrawer"
+    />
 
   </div>
 </template>
