@@ -1,8 +1,17 @@
 <script setup>
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useExploreBooks } from '@/composables/books/useExploreBooks'
+import { useAuthStore } from '@/stores/auth'
+import { useCartStore } from '@/stores/cart'
+import { useExploreBooks } from '@/composables/app/books/useExploreBooks'
+import AppNavbar from '@/components/ui/AppNavbar.vue'
+import AppFooter from '@/components/ui/AppFooter.vue'
 
 const router = useRouter()
+const authStore = useAuthStore()
+const cartStore = useCartStore()
+const showUserDropdown = ref(false)
+const showChatDrawer = ref(false)
 
 const {
   books,
@@ -20,15 +29,34 @@ const {
   stockLabel,
 } = useExploreBooks()
 
-function goToDetail(id) {
-  if (router.hasRoute('books.show')) {
-    router.push({ name: 'books.show', params: { id } })
+function goTo(name, params) {
+  if (router.hasRoute(name)) {
+    router.push(params ? { name, params } : { name })
+  } else {
+    window.alert('This page is not available yet.')
   }
+}
+
+function goToDetail(id) {
+  goTo('books.show', { id })
 }
 </script>
 
 <template>
   <div class="min-h-screen bg-[#F5F2EC] text-[#1C1917]">
+
+    <AppNavbar
+      :auth-store="authStore"
+      :cart-store="cartStore"
+      :show-user-dropdown="showUserDropdown"
+      :show-chat-drawer="showChatDrawer"
+      @update:show-user-dropdown="showUserDropdown = $event"
+      @update:show-chat-drawer="showChatDrawer = $event"
+      @toggle-cart="() => {}"
+      @go-to="goTo"
+      @scroll-to-top="() => window.scrollTo({ top: 0, behavior: 'smooth' })"
+      @logout="() => {}"
+    />
 
     <!-- HEADER -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-10">
@@ -69,12 +97,12 @@ function goToDetail(id) {
     </div>
 
     <!-- SEARCH + FILTER BAR -->
-    <div class="sticky top-0 z-20 bg-[#F5F2EC]/95 backdrop-blur-sm border-b border-[#E2DDD3]">
+    <div class="sticky top-20 z-20 bg-[#F5F2EC]/95 backdrop-blur-sm border-b border-[#E2DDD3]">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
 
         <!-- Search -->
         <div class="relative flex-1 max-w-sm">
-          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A8A29E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A8A29E]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
@@ -145,7 +173,6 @@ function goToDetail(id) {
               :alt="`Cover of ${book.title}`"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
-            <!-- Placeholder cover -->
             <div
               v-else
               :class="book.bgClass"
@@ -162,14 +189,12 @@ function goToDetail(id) {
 
           <!-- Card body -->
           <div class="p-5 flex flex-col gap-3 flex-1">
-            <!-- Category + No -->
             <div class="flex items-center justify-between">
               <span class="text-[10px] font-semibold uppercase tracking-wider text-[#78716C]">
                 {{ book.category?.name }}
               </span>
             </div>
 
-            <!-- Stock status -->
             <div class="flex items-center gap-1.5">
               <span
                 class="w-1.5 h-1.5 rounded-full shrink-0"
@@ -180,19 +205,17 @@ function goToDetail(id) {
               </span>
             </div>
 
-            <!-- Title -->
             <h2 class="font-serif text-xl text-[#1C1917] leading-snug line-clamp-2 group-hover:text-[#8B331A] transition-colors flex-1">
               {{ book.title }}
             </h2>
 
-            <!-- Price + CTA -->
             <div class="flex items-center justify-between pt-3 border-t border-[#F0EBE1] mt-auto">
               <span class="font-serif font-bold text-base text-[#1C1917]">
                 {{ formatPrice(book.sell_price) }}
               </span>
               <span class="text-xs font-semibold text-[#8B331A] group-hover:underline flex items-center gap-1">
                 View Details
-                <svg class="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
               </span>
@@ -207,5 +230,8 @@ function goToDetail(id) {
       </div>
 
     </div>
+
+    <AppFooter />
+
   </div>
 </template>

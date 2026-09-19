@@ -1,6 +1,6 @@
 <script setup>
 import { useCartStore } from '@/stores/cart'
-import { useCheckout } from '@/composables/checkout/useCheckout'
+import { useCheckout } from '@/composables/app/checkout/useCheckout'
 
 defineProps({
   show: { type: Boolean, required: true },

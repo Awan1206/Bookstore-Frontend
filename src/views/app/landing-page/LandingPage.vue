@@ -1,10 +1,17 @@
 <script setup>
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useLanding } from '@/composables/landing-page/useLanding'
-import CartDrawer from '@/components/cart/CartDrawer.vue'
-import CheckoutDrawer from '@/components/cart/CheckoutDrawer.vue'
+import { useLanding } from '@/composables/app/landing-page/useLanding'
+import { useChatStore } from '@/stores/chat'
+import AppNavbar from '@/components/ui/AppNavbar.vue'
+import AppFooter from '@/components/ui/AppFooter.vue'
+import CartDrawer from '@/components/app/CartDrawer.vue'
+import CheckoutDrawer from '@/components/app/CheckoutDrawer.vue'
+import UserChatDrawer from '@/components/app/ChatDrawer.vue'
 
 const router = useRouter()
+const showChatDrawer = ref(false)
+const chatStore = useChatStore()
 
 const {
   authStore,
@@ -27,7 +34,7 @@ const {
   handleSubscribe,
   formatPrice,
   scrollToTop,
-  addToCart,   
+  addToCart,
   handleLogout,
 } = useLanding()
 
@@ -47,118 +54,20 @@ async function handleAddToCart(book) {
 
 <template>
   <div class="min-h-screen bg-[#FAF8F5] text-[#1C1917] selection:bg-[#8B331A] selection:text-white">
-    <!-- TOP NAVIGATION HEADER -->
-    <header class="sticky top-0 z-40 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-[#E8E3DA] transition-all duration-300">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-        <!-- Logo -->
-        <div class="flex items-center space-x-3 cursor-pointer group" @click="scrollToTop">
-          <div class="w-9 h-9 bg-[#1C1917] text-[#FAF8F5] flex items-center justify-center rounded-sm font-serif font-bold text-lg group-hover:bg-[#8B331A] transition-colors duration-300 shadow-xs">
-            F
-          </div>
-          <div class="flex flex-col">
-            <span class="font-serif font-bold text-xl tracking-tight text-[#1C1917]">FOLIO PRESS</span>
-            <span class="text-[9px] uppercase tracking-widest text-[#78716C] -mt-1 font-sans">EST. 2024 • PUBLISHING</span>
-          </div>
-        </div>
 
-        <!-- Desktop Navigation -->
-        <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-[#44403C]">
-          <a href="#philosophy" class="hover:text-[#8B331A] transition-colors relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#8B331A] hover:after:w-full after:transition-all">Our Story</a>
-          <a href="#author-focus" class="hover:text-[#8B331A] transition-colors relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#8B331A] hover:after:w-full after:transition-all">Journal</a>
-          <a href="#catalog" class="hover:text-[#8B331A] transition-colors relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#8B331A] hover:after:w-full after:transition-all">Catalog</a>
-          <a href="#newsletter" class="hover:text-[#8B331A] transition-colors relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#8B331A] hover:after:w-full after:transition-all">Contact</a>
-        </nav>
-
-        <!-- Auth Actions -->
-        <div class="flex items-center space-x-3">
-          <!-- Cart Icon Badge -->
-          <button
-            type="button"
-            aria-label="Buka keranjang belanja"
-            class="p-2 text-[#44403C] hover:text-[#8B331A] transition-colors relative rounded-full hover:bg-[#EAE5DC]"
-            @click="toggleCartDrawer"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-            </svg>
-            <span
-              v-if="cartStore.count > 0"
-              class="absolute top-1 right-1 bg-[
-            #8B331A] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center"
-            >
-              {{ cartStore.count }}
-            </span>
-          </button>
-
-          <!-- Logged Out Button -->
-          <div v-if="!authStore.isAuthenticated" class="flex items-center space-x-2">
-            <button
-              type="button"
-              class="px-5 py-2 text-xs font-semibold uppercase tracking-wider bg-[#1C1917] text-[#FAF8F5] rounded-xs hover:bg-[#8B331A] transition-all shadow-xs active:scale-95 flex items-center space-x-2"
-              @click="goTo('login')"
-            >
-              <span>Login</span>
-            </button>
-          </div>
-
-          <!-- Logged In User Pill -->
-          <div v-else class="relative">
-            <button
-              type="button"
-              class="flex items-center space-x-2 px-3 py-1.5 bg-[#EAE5DC] hover:bg-[#E2DDD3] rounded-full border border-[#DCD5C9] transition-all"
-              @click="showUserDropdown = !showUserDropdown"
-            >
-              <div class="w-7 h-7 rounded-full bg-[#8B331A] text-white flex items-center justify-center font-bold text-xs">
-                {{ authStore.user?.name?.charAt(0).toUpperCase() }}
-              </div>
-              <span class="text-xs font-medium text-[#1C1917] max-w-[100px] truncate">{{ authStore.user?.name }}</span>
-              <svg
-                class="w-3.5 h-3.5 text-[#78716C] transition-transform"
-                :class="showUserDropdown ? 'rotate-180' : ''"
-                fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-
-            <!-- Profile Dropdown -->
-            <transition name="fade-slide">
-              <div v-if="showUserDropdown" class="absolute right-0 mt-2 w-56 bg-white border border-[#E8E3DA] rounded-lg shadow-xl py-2 z-50">
-                <div class="px-4 py-2 border-b border-[#F0EBE1]">
-                  <p class="text-xs font-semibold text-[#1C1917] truncate">{{ authStore.user?.name }}</p>
-                  <p class="text-[11px] text-[#78716C] truncate">{{ authStore.user?.email }}</p>
-                  <span v-if="authStore.isAdmin" class="inline-block mt-1 px-2 py-0.5 bg-[#8B331A]/10 text-[#8B331A] font-bold text-[9px] uppercase tracking-wider rounded">
-                    Admin Access
-                  </span>
-                </div>
-                <button
-                  v-if="authStore.isAdmin"
-                  type="button"
-                  class="w-full text-left px-4 py-2 text-xs font-bold text-[#8B331A] hover:bg-[#FAF8F5] flex items-center justify-between"
-                  @click="showUserDropdown = false; goTo('admin.dashboard')"
-                >
-                  <span>Portal Admin Dashboard</span>
-                  <span>→</span>
-                </button>
-                <a href="#catalog" class="block px-4 py-2 text-xs text-[#44403C] hover:bg-[#FAF8F5] hover:text-[#8B331A]" @click="showUserDropdown = false">
-                  Katalog Buku
-                </a>
-                <button
-                  type="button"
-                  class="w-full text-left px-4 py-2 text-xs text-red-700 hover:bg-red-50 flex items-center justify-between"
-                  @click="handleLogout"
-                >
-                  <span>Keluar / Logout</span>
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                </button>
-              </div>
-            </transition>
-          </div>
-        </div>
-      </div>
-    </header>
+    <!-- NAVBAR -->
+    <AppNavbar
+      :auth-store="authStore"
+      :cart-store="cartStore"
+      :show-user-dropdown="showUserDropdown"
+      :show-chat-drawer="showChatDrawer"
+      @update:show-user-dropdown="showUserDropdown = $event"
+      @update:show-chat-drawer="showChatDrawer = $event"
+      @toggle-cart="toggleCartDrawer"
+      @go-to="goTo"
+      @scroll-to-top="scrollToTop"
+      @logout="handleLogout"
+    />
 
     <!-- HERO SECTION -->
     <section class="relative pt-12 pb-24 lg:pt-16 lg:pb-32 overflow-hidden">
@@ -188,12 +97,12 @@ async function handleAddToCart(book) {
 
             <div class="pt-2 flex flex-wrap items-center gap-4">
               <button
-                 type="button"
-                 class="px-7 py-3.5 bg-[#8B331A] text-white text-xs font-bold tracking-widest uppercase rounded-xs hover:bg-[#722813] transition-all shadow-md hover:shadow-lg active:scale-95 inline-flex items-center space-x-2"
-                 @click="goTo('books.index')"
-               >
-                 <span>Explore Books</span>
-               </button>
+                type="button"
+                class="px-7 py-3.5 bg-[#8B331A] text-white text-xs font-bold tracking-widest uppercase rounded-xs hover:bg-[#722813] transition-all shadow-md hover:shadow-lg active:scale-95 inline-flex items-center space-x-2"
+                @click="goTo('books.index')"
+              >
+                <span>Explore Books</span>
+              </button>
               <a
                 href="#philosophy"
                 class="px-6 py-3.5 text-xs font-bold tracking-widest uppercase text-[#1C1917] hover:text-[#8B331A] transition-colors inline-flex items-center space-x-2 group"
@@ -237,7 +146,6 @@ async function handleAddToCart(book) {
                   <span class="text-[9px] font-bold tracking-widest uppercase text-[#8B331A] bg-[#8B331A]/10 px-2 py-0.5 rounded">AUTUMN EDITION</span>
                   <span class="font-mono text-xs text-[#A8A29E]">#010</span>
                 </div>
-
                 <div class="my-auto py-6 text-center">
                   <div class="font-serif font-extrabold text-5xl sm:text-6xl text-[#1C1917] tracking-tighter leading-none mb-2 select-none">
                     FOLIO
@@ -245,7 +153,6 @@ async function handleAddToCart(book) {
                   <div class="w-12 h-0.5 bg-[#8B331A] mx-auto my-3"></div>
                   <p class="font-serif italic text-sm text-[#57534E]">Architectural Prose &amp; Critical Essays</p>
                 </div>
-
                 <div class="bg-[#FAF8F5] border border-[#E8E3DA] rounded-full py-1.5 px-3 text-center shadow-xs">
                   <p class="text-[10px] font-medium text-[#44403C] tracking-tight">
                     Hardcover First Edition • Signed by Author
@@ -458,21 +365,18 @@ async function handleAddToCart(book) {
               class="h-64 rounded-lg relative overflow-hidden transition-transform duration-300 group-hover:scale-[1.02] cursor-pointer"
               @click="goTo('books.show', { id: book.id })"
             >
-              <!-- Image if available -->
               <img
                 v-if="book.image_url"
                 :src="book.image_url"
                 :alt="book.title"
                 class="absolute inset-0 w-full h-full object-cover"
               />
-              <!-- Fallback color block when no image -->
               <div
                 v-else
                 :class="book.bgClass"
                 class="absolute inset-0 w-full h-full"
               ></div>
 
-              <!-- Overlay content -->
               <div class="relative z-10 h-full p-6 flex flex-col justify-between text-white">
                 <div class="flex justify-between items-start">
                   <span class="text-[9px] font-mono uppercase bg-black/30 px-2 py-0.5 rounded backdrop-blur-xs">
@@ -484,7 +388,6 @@ async function handleAddToCart(book) {
                   <h4 class="font-serif text-xl font-bold leading-snug line-clamp-2 drop-shadow">{{ book.title }}</h4>
                   <p class="text-xs text-white/80 mt-1 font-serif italic drop-shadow">{{ book.author }}</p>
                 </div>
-                <!-- optional: darken image for text legibility -->
                 <div v-if="book.image_url" class="absolute inset-0 bg-black/15 -z-10"></div>
               </div>
             </div>
@@ -552,56 +455,7 @@ async function handleAddToCart(book) {
     </section>
 
     <!-- FOOTER -->
-    <footer class="bg-[#141211] text-stone-500 py-16 border-t border-stone-800 text-xs">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
-
-          <div class="space-y-3">
-            <div class="flex items-center space-x-2">
-              <div class="w-6 h-6 bg-white text-black font-serif font-bold text-xs flex items-center justify-center rounded-xs">F</div>
-              <span class="font-serif font-bold text-white text-base">FOLIO PRESS</span>
-            </div>
-            <p class="text-stone-400 leading-relaxed">
-              Architectural publishing and independent literary press dedicated to physical permanence.
-            </p>
-          </div>
-
-          <div>
-            <h5 class="text-stone-200 font-bold uppercase tracking-wider text-[11px] mb-4">Navigasi</h5>
-            <ul class="space-y-2">
-              <li><a href="#philosophy" class="hover:text-white transition-colors">Our Story</a></li>
-              <li><a href="#curated" class="hover:text-white transition-colors">Curated Editions</a></li>
-              <li><a href="#catalog" class="hover:text-white transition-colors">Buku &amp; Katalog</a></li>
-              <li><a href="#author-focus" class="hover:text-white transition-colors">Journal</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h5 class="text-stone-200 font-bold uppercase tracking-wider text-[11px] mb-4">Layanan</h5>
-            <ul class="space-y-2">
-              <li><a href="#" class="hover:text-white transition-colors">Pengiriman Kraft</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Pengembalian</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Status Pesanan</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Keanggotaan Press</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h5 class="text-stone-200 font-bold uppercase tracking-wider text-[11px] mb-4">Lokasi &amp; Kontak</h5>
-            <p class="text-stone-400 leading-relaxed">
-              Jl. Sastra No. 10, Jakarta Selatan<br />
-              redaksi@foliopress.id<br />
-              +62 21 555 0192
-            </p>
-          </div>
-
-        </div>
-
-        <div class="mt-12 pt-8 border-t border-stone-800/80 flex flex-col sm:flex-row justify-between items-center text-[11px]">
-          <p>© 2026 FOLIO PRESS. All rights reserved.</p>
-        </div>
-      </div>
-    </footer>
+    <AppFooter />
 
     <!-- CART DRAWER -->
     <CartDrawer
@@ -611,11 +465,17 @@ async function handleAddToCart(book) {
       @require-login="goTo('login')"
     />
 
-    <!-- CHECKOUT DRAWER (layered on top) -->
+    <!-- CHECKOUT DRAWER -->
     <CheckoutDrawer
       :show="showCheckoutDrawer"
       @close="closeAll"
       @back="closeCheckoutDrawer"
+    />
+
+    <!-- CHAT DRAWER -->
+    <UserChatDrawer
+      :open="showChatDrawer"
+      @close="showChatDrawer = false"
     />
 
   </div>
@@ -629,15 +489,5 @@ async function handleAddToCart(book) {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-}
-
-.fade-slide-enter-active,
-.fade-slide-leave-active {
-  transition: all 0.15s ease;
-}
-.fade-slide-enter-from,
-.fade-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-4px);
 }
 </style>

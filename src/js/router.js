@@ -8,56 +8,47 @@ const routes = [
   {
     path: '/',
     name: 'landing',
-    component: () => import('@/views/landing-page/LandingPage.vue')
+    component: () => import('@/views/app/landing-page/LandingPage.vue')
   },
-  // {
-  //   path: '/blog',
-  //   name: 'blog',
-  //   component: () => import('@/views/Blog.vue')
-  // },
-  // {
-  //   path: '/contact',
-  //   name: 'contact',
-  //   component: () => import('@/views/Contact.vue')
-  // },
+  {
+    path: '/our-story',
+    name: 'our-story',
+    component: () => import('@/views/app/landing-page/OurStory.vue')
+  },
+  {
+    path: '/journal',
+    name: 'journal',
+    component: () => import('@/views/app/landing-page/Journal.vue')
+  },
+  {
+    path: '/contact',
+    name: 'contact',
+    component: () => import('@/views/app/landing-page/Contact.vue')
+  },
   {
     path: '/books',
     name: 'books.index',
-    component: () => import('@/views/books/ExploreBooks.vue')
+    component: () => import('@/views/app/books/ExploreBooks.vue')
   },
   {
     path: '/books/:id',
     name: 'books.show',
-    component: () => import('@/views/books/BookDetail.vue')
+    component: () => import('@/views/app/books/BookDetail.vue')
   },
 
   // ── Guest-only (tidak boleh diakses jika sudah login) ───────────────
   {
     path: '/login',
     name: 'login',
-    component: () => import('@/views/auth/Login.vue'),
+    component: () => import('@/views/app/auth/Login.vue'),
     meta: { guestOnly: true }
   },
-
-  // // ── User (butuh login, role: user) ──────────────────────────────────
-  // {
-  //   path: '/cart',
-  //   name: 'cart',
-  //   component: () => import('@/views/user/Cart.vue'),
-  //   meta: { requiresAuth: true, role: 'user' }
-  // },
-  // {
-  //   path: '/orders',
-  //   name: 'orders.index',
-  //   component: () => import('@/views/user/OrderList.vue'),
-  //   meta: { requiresAuth: true, role: 'user' }
-  // },
-  // {
-  //   path: '/chat',
-  //   name: 'chat',
-  //   component: () => import('@/views/user/Chat.vue'),
-  //   meta: { requiresAuth: true, role: 'user' }
-  // },
+  {
+    path: '/forgot-password',
+    name: 'forgot-password',
+    component: () => import('@/views/app/auth/ForgotPassword.vue'),
+    meta: { guestOnly: true }
+  },
 
   // ── Admin (butuh login, role: admin) ────────────────────────────────
   {

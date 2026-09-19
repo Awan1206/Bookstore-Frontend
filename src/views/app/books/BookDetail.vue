@@ -1,5 +1,5 @@
 <script setup>
-import { useBookDetail } from '@/composables/books/useBookDetail'
+import { useBookDetail } from '@/composables/app/books/useBookDetail'
 
 const {
   book,

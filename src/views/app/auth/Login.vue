@@ -1,5 +1,5 @@
 <script setup>
-import { useAuth } from '@/composables/auth/useAuth'
+import { useAuth } from '@/composables/app/auth/useAuth'
 
 const {
   isRegister,
@@ -243,9 +243,9 @@ const {
               <div>
                 <div class="flex justify-between items-center mb-1">
                   <label class="text-xs font-semibold text-[#1C1917]">Password</label>
-                  <a v-if="!isRegister" href="#" class="text-[10px] font-semibold text-[#8B331A] hover:underline">
+                  <RouterLink :to="{ name: 'forgot-password' }" class="text-[10px] font-semibold text-[#8B331A] hover:underline">
                     Forgot password?
-                  </a>
+                  </RouterLink>
                 </div>
                 <div class="relative">
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#78716C]">
@@ -294,19 +294,6 @@ const {
                     class="w-full pl-9 pr-4 py-2.5 bg-[#F8F6F1] border border-[#E8E3DA] rounded-lg text-xs text-[#1C1917] placeholder-[#A8A29E] focus:outline-none focus:border-[#1C1917] focus:bg-white transition-colors"
                   />
                 </div>
-              </div>
-
-              <!-- Remember me (login only) -->
-              <div v-if="!isRegister" class="flex items-center space-x-2 pt-1">
-                <input
-                  id="remember"
-                  v-model="form.remember"
-                  type="checkbox"
-                  class="w-4 h-4 accent-[#0D192B] rounded cursor-pointer"
-                />
-                <label for="remember" class="text-xs text-[#44403C] select-none cursor-pointer">
-                  Remember me for 30 days
-                </label>
               </div>
 
               <!-- Submit -->
