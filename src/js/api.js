@@ -1,8 +1,7 @@
-// src/js/api.js
-// Mode: Laravel Sanctum Personal Access Token (Bearer)
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 import router from '@/js/router'
+import echo from '@/js/echo'   // NEW
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -19,6 +18,11 @@ api.interceptors.request.use((config) => {
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
+  }
+
+  const socketId = echo.socketId()
+  if (socketId) {
+    config.headers['X-Socket-Id'] = socketId
   }
 
   return config

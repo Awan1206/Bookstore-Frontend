@@ -95,11 +95,11 @@ const routes = [
         name: 'admin.cashier',
         component: () => import('@/views/admin/Cashier.vue')
       },
-  //     {
-  //       path: 'chats',
-  //       name: 'admin.chats',
-  //       component: () => import('@/views/admin/ChatManagement.vue')
-  //     }
+      {
+        path: 'chats',
+        name: 'admin.chats',
+        component: () => import('@/views/admin/Chat.vue')
+      }
     ]
   },
 
